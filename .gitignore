@@ -1,0 +1,30 @@
+# Binaries
+bin/
+dist/
+
+# Build
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test
+*.test
+coverage.out
+
+# IDE
+.vscode/
+.idea/
+
+# Env
+.env
+*.env
+!.env.example
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db

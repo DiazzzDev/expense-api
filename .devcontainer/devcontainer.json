@@ -1,0 +1,32 @@
+{
+    "name": "Go Development",
+    "build": {
+        "dockerfile": "Dockerfile"
+    },
+    "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+    "forwardPorts": [
+        8080,
+        5432
+    ],
+    "postCreateCommand": "go mod tidy",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "golang.Go",
+                "ms-azuretools.vscode-docker",
+                "eamodio.gitlens",
+                "github.vscode-github-actions",
+                "redhat.vscode-yaml"
+            ],
+            "settings": {
+                "go.useLanguageServer": true,
+                "go.lintTool": "golangci-lint",
+                "editor.formatOnSave": true,
+                "editor.codeActionsOnSave": {
+                    "source.organizeImports": "explicit"
+                }
+            }
+        }
+    },
+    "remoteUser": "vscode"
+}
