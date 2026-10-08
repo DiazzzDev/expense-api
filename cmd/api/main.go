@@ -2,71 +2,40 @@ package main
 
 import (
 	"context"
-	"errors"
-	"log/slog"
-	"net/http"
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
+	"log"
 
 	"github.com/gin-gonic/gin"
 
 	"example/expense-api/internal/config"
 	"example/expense-api/internal/database"
 	"example/expense-api/internal/handler"
+	"example/expense-api/internal/repository"
+	"example/expense-api/internal/service"
 )
 
 func main() {
-	slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stdout, nil)))
-
-	if err := run(); err != nil {
-		slog.Error("fatal", "err", err)
-		os.Exit(1)
-	}
-}
-
-func run() error {
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-	defer stop()
+	ctx := context.Background()
 
 	cfg, err := config.Load()
 	if err != nil {
-		return err
+		log.Fatal(err)
 	}
 
-	pool, err := database.NewPool(ctx, cfg)
+	pool, err := database.Connect(ctx, cfg.DatabaseURL)
 	if err != nil {
-		return err
+		log.Fatal(err)
 	}
 	defer pool.Close()
 
-	r := gin.New()
-	r.Use(gin.Recovery())
+	userRepo := repository.NewUserRepository(pool)
+	userSvc := service.NewUserService(userRepo)
+	userHandler := handler.NewUserHandler(userSvc)
+
+	r := gin.Default()
 	r.GET("/healthz", handler.Health(pool))
+	r.GET("/users/:id", userHandler.GetByID)
 
-	srv := &http.Server{
-		Addr:              ":" + cfg.Port,
-		Handler:           r,
-		ReadHeaderTimeout: 5 * time.Second,
+	if err := r.Run(":" + cfg.Port); err != nil {
+		log.Printf("server: %v", err)
 	}
-
-	errCh := make(chan error, 1)
-	go func() {
-		slog.Info("server starting", "port", cfg.Port)
-		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			errCh <- err
-		}
-	}()
-
-	select {
-	case err := <-errCh:
-		return err
-	case <-ctx.Done():
-		slog.Info("shutting down")
-	}
-
-	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	return srv.Shutdown(shutdownCtx)
 }
