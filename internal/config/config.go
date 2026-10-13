@@ -9,13 +9,17 @@ import (
 
 // Load variables
 type Config struct {
-	DatabaseURL string `env:"DATABASE_URL"`
+	DatabaseURL string `env:"DATABASE_URL,required"`
 	Port        string `env:"PORT" envDefault:"8080"`
 
 	DBMaxConns        int32         `env:"DB_MAX_CONNS" envDefault:"10"`
 	DBMinConns        int32         `env:"DB_MIN_CONNS" envDefault:"2"`
 	DBMaxConnLifetime time.Duration `env:"DB_MAX_CONN_LIFETIME" envDefault:"30m"`
 	DBMaxConnIdleTime time.Duration `env:"DB_MAX_CONN_IDLE_TIME" envDefault:"5m"`
+
+	CognitoRegion     string `env:"COGNITO_REGION,required"`
+	CognitoUserPoolID string `env:"COGNITO_USER_POOL_ID,required"`
+	CognitoClientID   string `env:"COGNITO_APP_CLIENT_ID,required"`
 }
 
 // Parse config

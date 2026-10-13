@@ -1,14 +1,11 @@
 package handler
 
 import (
-	"errors"
-	"log"
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 
-	"example/expense-api/internal/apperr"
+	"example/expense-api/internal/middleware"
 	"example/expense-api/internal/service"
 )
 
@@ -20,23 +17,30 @@ func NewUserHandler(svc *service.UserService) *UserHandler {
 	return &UserHandler{svc: svc}
 }
 
-func (h *UserHandler) GetByID(c *gin.Context) {
-	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+type updateMeRequest struct {
+	DisplayName string `json:"display_name" binding:"required"`
+}
+
+func (h *UserHandler) Me(c *gin.Context) {
+	u, err := h.svc.Get(c.Request.Context(), c.GetString(middleware.UserIDKey))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+		respondError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, u)
+}
+
+func (h *UserHandler) UpdateMe(c *gin.Context) {
+	var req updateMeRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	u, err := h.svc.GetByID(c.Request.Context(), id)
-	if errors.Is(err, apperr.ErrNotFound) {
-		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
-		return
-	}
+	u, err := h.svc.UpdateDisplayName(c.Request.Context(), c.GetString(middleware.UserIDKey), req.DisplayName)
 	if err != nil {
-		log.Printf("get user: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
+		respondError(c, err)
 		return
 	}
-
 	c.JSON(http.StatusOK, u)
 }

@@ -1,3 +1,26 @@
+# Env (solo se versiona .env.example)
+.env
 *.env
+.env.*
 !.env.example
-dist
+
+# Build y herramientas
+bin/
+dist/
+tmp/
+*.exe
+*.test
+*.out
+
+# Terraform (el state puede contener secretos; el lock file sí se versiona)
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+crash.log
+
+# Editor / SO
+.idea/
+.DS_Store
+Thumbs.db

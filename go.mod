@@ -3,9 +3,16 @@ module example/expense-api
 go 1.26.5
 
 require (
+	github.com/MicahParks/keyfunc/v3 v3.8.2
 	github.com/caarlos0/env/v11 v11.4.1
 	github.com/gin-gonic/gin v1.12.0
+	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/jackc/pgx/v5 v5.11.0
+)
+
+require (
+	github.com/MicahParks/jwkset v0.11.3 // indirect
+	golang.org/x/time v0.15.0 // indirect
 )
 
 require (
